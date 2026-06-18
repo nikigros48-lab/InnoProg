@@ -18,6 +18,14 @@ class ProductManager(models.Manager):
 
 
 class Product(models.Model):
+
+    class Meta:
+        verbose_name = 'Товар'
+        verbose_name_plural = 'Товары'
+        indexes = [
+            models.Index(fields=['title']),
+        ]
+
     title = models.CharField(max_length=255)
     description = models.TextField()
     price = models.FloatField()
@@ -31,17 +39,34 @@ class ProductImage(models.Model):
     image = models.ImageField()
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = 'Изображение товара'
+        verbose_name_plural = 'Изображения товаров'
 
+    
 class Attribute(models.Model):
     name = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = 'Атрибут'
+        verbose_name_plural = 'Атрибуты'
 
 
 class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+
 
 class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
+
+    class Meta:
+        verbose_name = 'Элемент заказа'
+        verbose_name_plural = 'Элементы заказов'
+
