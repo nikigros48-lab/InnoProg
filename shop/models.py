@@ -23,7 +23,7 @@ class Product(models.Model):
         verbose_name = 'Товар'
         verbose_name_plural = 'Товары'
         indexes = [
-            models.Index(fields=['title']),
+            models.Index(fields=['price']),
         ]
 
     title = models.CharField(max_length=255)
