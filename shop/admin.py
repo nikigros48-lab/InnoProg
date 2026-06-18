@@ -1,13 +1,13 @@
 from django.contrib import admin
 from shop.models import Product, Attribute
-from shop.filters import StockFilter
+from shop.filters import ProductStockFilter
 
 # Register your models here.
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('title', 'price', 'stock')
     search_fields = ('title', 'description')
-    list_filter = (StockFilter,)
+    list_filter = (ProductStockFilter,)
     actions = ['reset_stock']
 
     @admin.action(description='Обнулить остатки')
