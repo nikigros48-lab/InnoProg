@@ -51,6 +51,9 @@ class Attribute(models.Model):
         verbose_name = 'Атрибут'
         verbose_name_plural = 'Атрибуты'
 
+    def __str__(self):
+        return self.name
+
 
 class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
