@@ -1,8 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpRequest, HttpResponse
 from .models import Product
+import datetime
 
-# Create your views here.
+
 def all_products(request: HttpRequest) -> HttpResponse:
     products = Product.objects.all()
-    return HttpResponse(f"<p>{product}</p>" for product in products)
+    current_time = datetime.datetime.now()
+    return render(
+        request,
+        "products/products.html",
+        {"products": products, "current_time": current_time},
+    )
