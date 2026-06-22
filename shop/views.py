@@ -9,6 +9,6 @@ def all_products(request: HttpRequest) -> HttpResponse:
     current_time = datetime.datetime.now()
     return render(
         request,
-        "products/products.html",
+        "products.html",
         {"products": products, "current_time": current_time},
     )
