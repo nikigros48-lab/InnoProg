@@ -1,6 +1,11 @@
 from django.contrib import admin
-from shop.models import Product, Attribute
+from shop.models import Product, Attribute, ProductImage
 from shop.filters import ProductStockFilter
+
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
 
 
 @admin.register(Product)
@@ -20,3 +25,8 @@ class ProductAdmin(admin.ModelAdmin):
 class AttributeAdmin(admin.ModelAdmin):
     list_display = ("id", "name")
     search_fields = ("name",)
+
+
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ("id", "image", "product")
