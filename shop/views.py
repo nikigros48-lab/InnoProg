@@ -8,17 +8,22 @@ from .models import Product
 import datetime
 
 
+def common_page(request: HttpRequest) -> HttpResponse:
+    is_authenticated = request.user.is_authenticated
+    return render(
+        request, "common.html", context={"is_authenticated": is_authenticated}
+    )
+
+
 def all_products(request: HttpRequest) -> HttpResponse:
     products = Product.objects.all()
     current_time = datetime.datetime.now()
-    is_authenticated = request.user.is_authenticated
     return render(
         request,
         "products.html",
         {
             "products": products,
             "current_time": current_time,
-            "is_authenticated": is_authenticated,
         },
     )
 
@@ -56,4 +61,4 @@ def login_page(request: HttpRequest) -> HttpResponse:
 
 def logout_user(request: HttpRequest) -> HttpResponse:
     logout(request)
-    return redirect("products")
+    return redirect("home")

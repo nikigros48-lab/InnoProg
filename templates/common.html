@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Common</title>
+</head>
+<body>
+    {% if is_authenticated %}
+        <a href={% url "logout" %} type="button">Выйти</a>
+    {% else %}
+        <a href={% url "login" %} type="button">Войти</a>
+    {% endif %}
+</body>
+</html>
