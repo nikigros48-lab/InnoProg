@@ -8,11 +8,10 @@
     {% for message in messages %}
         <p>{{ message }}</p>
     {% endfor %}
-    <form method="post">
+    <form method="POST">
         {% csrf_token %}
         {{ form }}
-        <button type="submit">Login</button>
+        <button type="submit">Войти</button>
     </form>
-
 </body>
 </html>

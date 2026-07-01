@@ -16,9 +16,7 @@ class UserAuthForm(forms.Form):
         if not username:
             self.add_error("username", "Please enter a username")
         if not (username.isascii() and username.isalpha() and " " not in username):
-            self.add_error(
-                "username", "Username must contain only letters, numbers and spaces."
-            )
+            self.add_error("username", "Username must contain only letters")
         return username
 
     def clean_password(self):

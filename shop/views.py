@@ -10,9 +10,7 @@ import datetime
 
 def common_page(request: HttpRequest) -> HttpResponse:
     is_authenticated = request.user.is_authenticated
-    return render(
-        request, "common.html", context={"is_authenticated": is_authenticated}
-    )
+    return render(request, "common.html", context={"request": request})
 
 
 def all_products(request: HttpRequest) -> HttpResponse:
@@ -41,6 +39,7 @@ def registration_view(request: HttpRequest) -> HttpResponse:
 
 
 def login_page(request: HttpRequest) -> HttpResponse:
+    form = UserAuthForm()
     if request.method == "POST":
         form = UserAuthForm(request.POST)
         if form.is_valid():
@@ -53,12 +52,9 @@ def login_page(request: HttpRequest) -> HttpResponse:
                 return redirect("products")
             else:
                 messages.error(request, "Username or password is incorrect")
-        else:
-            messages.error(request, form.errors)
-    form = UserAuthForm()
     return render(request, "login.html", {"form": form})
 
 
 def logout_user(request: HttpRequest) -> HttpResponse:
     logout(request)
-    return redirect("home")
+    return redirect("products")
