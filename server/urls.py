@@ -7,7 +7,6 @@ from shop.views import (
     common_page,
     RegistrationView,
     LoginView,
-    AllProductsView,
 )
 
 urlpatterns = [
@@ -16,7 +15,7 @@ urlpatterns = [
     path("register/", RegistrationView.as_view()),
     path("login/", LoginView.as_view(), name="login"),
     path("logout/", logout_user, name="logout"),
-    path("products/", AllProductsView.as_view(), name="products"),
+    path("", include("shop.urls")),
 ]
 
 if settings.DEBUG:
