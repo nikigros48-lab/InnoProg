@@ -15,7 +15,7 @@ def common_page(request: HttpRequest) -> HttpResponse:
     return render(request, "common.html", context={"request": request})
 
 
-class ProductsView(ListView):
+class AllProductsView(ListView):
     model = Product
     template_name = "products.html"
     context_object_name = "products"
