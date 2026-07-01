@@ -4,6 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.views import View
+from django.views.generic import ListView
 
 from .forms import UserAuthForm
 from .models import Product
@@ -14,17 +15,11 @@ def common_page(request: HttpRequest) -> HttpResponse:
     return render(request, "common.html", context={"request": request})
 
 
-def all_products(request: HttpRequest) -> HttpResponse:
-    products = Product.objects.all()
-    current_time = datetime.datetime.now()
-    return render(
-        request,
-        "products.html",
-        {
-            "products": products,
-            "current_time": current_time,
-        },
-    )
+class ProductsView(ListView):
+    model = Product
+    template_name = "products.html"
+    context_object_name = "products"
+    extra_context = {"current_time": datetime.datetime.now()}
 
 
 class RegistrationView(View):
