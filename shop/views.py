@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 
 from .forms import UserAuthForm
 from .models import Product
@@ -20,6 +20,16 @@ class AllProductsView(ListView):
     template_name = "products.html"
     context_object_name = "products"
     extra_context = {"current_time": datetime.datetime.now()}
+
+
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = "product_detail.html"
+    context_object_name = "product"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.prefetch_related("productimage_set")
 
 
 class RegistrationView(View):

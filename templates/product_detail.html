@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ product.title }}</title>
+</head>
+<body>
+    <div class="product-container">
+        <div class="image-container">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.title }}">
+            {% endif %}
+            {% for image in product.productimage_set.all %}
+                <img src="{{ image.image.url }}" alt="">
+            {% endfor %}
+        </div>
+        <div class="info-container">
+            <p>Название: {{ product.title }}</p>
+            <p>Цена: {{ product.price }}</p>
+            <p>Описание: {{ product.description }}</p>
+        </div>
+    </div>
+    <a href="#">Добавить в корзину</a>
+</body>
+</html>
