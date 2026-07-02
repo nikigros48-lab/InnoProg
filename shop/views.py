@@ -7,6 +7,7 @@ from django.views import View
 from django.views.generic import ListView, DetailView
 
 from .forms import UserAuthForm
+from .mixins import IsAuthenticatedMixin
 from .models import Product
 import datetime
 
@@ -15,7 +16,7 @@ def common_page(request: HttpRequest) -> HttpResponse:
     return render(request, "common.html", context={"request": request})
 
 
-class AllProductsView(ListView):
+class AllProductsView(IsAuthenticatedMixin, ListView):
     model = Product
     template_name = "products.html"
     context_object_name = "products"
