@@ -1,7 +1,8 @@
 from django.shortcuts import redirect
+from django.views import View
 
 
-class IsAuthenticatedMixin:
+class IsAuthenticatedMixin(View):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect("login")

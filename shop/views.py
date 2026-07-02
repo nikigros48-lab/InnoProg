@@ -1,9 +1,11 @@
 from django.contrib.auth import login, authenticate, logout
 from django.shortcuts import render, redirect
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import ListView, DetailView
 
 from .forms import UserAuthForm
@@ -23,6 +25,7 @@ class AllProductsView(IsAuthenticatedMixin, ListView):
     extra_context = {"current_time": datetime.datetime.now()}
 
 
+@method_decorator(ensure_csrf_cookie, name="dispatch")
 class ProductDetailView(DetailView):
     model = Product
     template_name = "product_detail.html"
@@ -31,6 +34,13 @@ class ProductDetailView(DetailView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.prefetch_related("productimage_set")
+
+
+class CartView(View):
+    @staticmethod
+    def post(request: HttpRequest) -> HttpResponse:
+        request.session["key"] = 123
+        return JsonResponse({"success": True})
 
 
 class RegistrationView(View):
