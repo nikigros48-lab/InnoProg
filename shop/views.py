@@ -7,6 +7,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import ListView, DetailView
+import json
+from django.http import JsonResponse
 
 from .forms import UserAuthForm
 from .mixins import IsAuthenticatedMixin
@@ -37,10 +39,44 @@ class ProductDetailView(DetailView):
 
 
 class CartView(View):
-    @staticmethod
-    def post(request: HttpRequest) -> HttpResponse:
-        request.session["key"] = 123
-        return JsonResponse({"success": True})
+    def get(self, request):
+        product_id = request.GET.get("product_id")
+        if not product_id:
+            return JsonResponse({"error": "product_id required"}, status=400)
+        cart = request.session.get("cart", {})
+        in_cart = str(product_id) in cart
+        return JsonResponse({"in_cart": in_cart})
+
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            product_id = str(data.get("productId"))
+            quantity = int(data.get("quantity", 1))
+        except (json.JSONDecodeError, ValueError, TypeError):
+            return JsonResponse({"error": "Invalid data"}, status=400)
+
+        if quantity < 1:
+            return JsonResponse({"error": "Quantity must be positive"}, status=400)
+
+        cart = request.session.get("cart", {})
+        cart[product_id] = cart.get(product_id, 0) + quantity
+        request.session["cart"] = cart
+        request.session.modified = True
+        return JsonResponse({"success": True, "cart": cart})
+
+    def delete(self, request):
+        try:
+            data = json.loads(request.body)
+            product_id = str(data.get("productId"))
+        except (json.JSONDecodeError, AttributeError):
+            return JsonResponse({"error": "Invalid data"}, status=400)
+
+        cart = request.session.get("cart", {})
+        if product_id in cart:
+            del cart[product_id]
+            request.session["cart"] = cart
+            request.session.modified = True
+        return JsonResponse({"success": True, "cart": cart})
 
 
 class RegistrationView(View):

@@ -6,58 +6,112 @@
 </head>
 <body>
     <script>
-        window.addEventListener('load', function() {
-            let toCartBtn = document.getElementById("add-to-cart"),
-                increase = document.getElementById("increase"),
-                decrease = document.getElementById("decrease"),
-                counter = document.getElementById("counter");
+        window.addEventListener('load', function () {
+    const toCartBtn = document.getElementById("add-to-cart");
+    const increase = document.getElementById("increase");
+    const decrease = document.getElementById("decrease");
+    const counter = document.getElementById("counter");
 
-            increase.onclick = function (event) {
-                let value = parseInt(counter.innerHTML);
-                if (isNaN(value)) value = 0;
-                if (value < {{ product.stock }}) value++;
-                counter.innerHTML = value.toString();
-            }
-
-            decrease.onclick = function (event) {
-                let value = parseInt(counter.innerHTML);
-                if (isNaN(value)) value = 0;
-                if (value > 0) value--;
-                counter.innerHTML = value.toString();
-            }
-
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
-                return cookieValue;
             }
-            const csrftoken = getCookie('csrftoken');
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-            toCartBtn.onclick = function (event) {
-                fetch(`{% url "cart" %}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": csrftoken
-                    },
-                    body: JSON.stringify({
-                        "productId": 123,
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => console.log(data))
-                    .catch(err => console.log(err))
-            }
+    const productId = {{ product.id }};
+
+    increase.onclick = function () {
+        let value = parseInt(counter.innerHTML);
+        if (isNaN(value)) value = 0;
+        if (value < {{ product.stock }}) value++;
+        counter.innerHTML = value.toString();
+    };
+
+    decrease.onclick = function () {
+        let value = parseInt(counter.innerHTML);
+        if (isNaN(value)) value = 0;
+        if (value > 0) value--;
+        counter.innerHTML = value.toString();
+    };
+
+    function setButtonState(inCart) {
+        if (inCart) {
+            toCartBtn.textContent = "Удалить из корзины";
+            toCartBtn.dataset.action = "remove";
+        } else {
+            toCartBtn.textContent = "Добавить в корзину";
+            toCartBtn.dataset.action = "add";
+        }
+    }
+
+    fetch(`/cart/?product_id=${productId}`)
+        .then(response => response.json())
+        .then(data => {
+            setButtonState(data.in_cart);
         })
+        .catch(err => console.error('Ошибка проверки корзины:', err));
+
+    toCartBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        const action = toCartBtn.dataset.action;
+
+        if (action === 'add') {
+            const quantity = parseInt(counter.innerHTML) || 0;
+            if (quantity < 1) {
+                alert('Укажите количество больше 0');
+                return;
+            }
+            fetch(`/cart/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    productId: productId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setButtonState(true);
+                }
+            })
+            .catch(err => console.error('Ошибка добавления:', err));
+
+        } else if (action === 'remove') {
+            fetch(`/cart/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    productId: productId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    setButtonState(false);
+                    counter.innerHTML = "0";
+                }
+            })
+            .catch(err => console.error('Ошибка удаления:', err));
+        }
+    });
+});
     </script>
     <div class="product-container">
         <div class="image-container">
