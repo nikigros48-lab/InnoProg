@@ -91,7 +91,7 @@
             .catch(err => console.error('Ошибка добавления:', err));
 
         } else if (action === 'remove') {
-            fetch(`/cart/`, {
+            fetch(`{% url "cart" %}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

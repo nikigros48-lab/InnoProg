@@ -53,12 +53,22 @@ class CartView(View):
         return JsonResponse({"cart": cart})
 
     def post(self, request):
+        if request.content_type == "application/json":
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid JSON"}, status=400)
+        else:
+            data = request.POST
+
+        product_id = str(data.get("productId") or data.get("product_id"))
+        if not product_id:
+            return JsonResponse({"error": "productId required"}, status=400)
+
         try:
-            data = json.loads(request.body)
-            product_id = str(data.get("productId"))
             quantity = int(data.get("quantity", 1))
-        except (json.JSONDecodeError, ValueError, TypeError):
-            return JsonResponse({"error": "Invalid data"}, status=400)
+        except (ValueError, TypeError):
+            return JsonResponse({"error": "Quantity must be integer"}, status=400)
 
         if quantity < 1:
             return JsonResponse({"error": "Quantity must be positive"}, status=400)
@@ -72,8 +82,8 @@ class CartView(View):
     def delete(self, request):
         try:
             data = json.loads(request.body)
-            product_id = str(data.get("productId"))
-        except (json.JSONDecodeError, AttributeError):
+            product_id = str(data["productId"])
+        except (json.JSONDecodeError, KeyError):
             return JsonResponse({"error": "Invalid data"}, status=400)
 
         cart = request.session.get("cart", {})
