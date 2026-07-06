@@ -41,15 +41,12 @@ class ProductDetailView(DetailView):
 class CartView(View):
     def get(self, request):
         product_id = request.GET.get("product_id")
-
         if product_id:
             cart = request.session.get("cart", {})
             in_cart = str(product_id) in cart
             return JsonResponse({"in_cart": in_cart})
 
         cart = request.session.get("cart", {})
-        if cart is None:
-            return JsonResponse({"error": "Корзина не найдена"}, status=404)
         return JsonResponse({"cart": cart})
 
     def post(self, request):
@@ -79,19 +76,19 @@ class CartView(View):
         request.session.modified = True
         return JsonResponse({"success": True, "cart": cart})
 
-    def delete(self, request):
-        try:
-            data = json.loads(request.body)
-            product_id = str(data["productId"])
-        except (json.JSONDecodeError, KeyError):
-            return JsonResponse({"error": "Invalid data"}, status=400)
-
+    def delete(self, request, product_id: int):
         cart = request.session.get("cart", {})
-        if product_id in cart:
-            del cart[product_id]
-            request.session["cart"] = cart
-            request.session.modified = True
-        return JsonResponse({"success": True, "cart": cart})
+
+        if cart is None:
+            return JsonResponse({"detail": "Cart does not exist"}, status=400)
+
+        if str(product_id) not in cart:
+            return JsonResponse({"detail": "Product not in cart"}, status=400)
+
+        del cart[str(product_id)]
+
+        request.session.update({"cart": cart})
+        return JsonResponse({}, status=204)
 
 
 class RegistrationView(View):
