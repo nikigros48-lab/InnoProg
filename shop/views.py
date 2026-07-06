@@ -39,6 +39,7 @@ class ProductDetailView(DetailView):
 
 
 class CartView(View):
+
     def get(self, request):
         product_id = request.GET.get("product_id")
         if product_id:
@@ -50,31 +51,22 @@ class CartView(View):
         return JsonResponse({"cart": cart})
 
     def post(self, request):
-        if request.content_type == "application/json":
-            try:
-                data = json.loads(request.body)
-            except json.JSONDecodeError:
-                return JsonResponse({"error": "Invalid JSON"}, status=400)
-        else:
-            data = request.POST
-
-        product_id = str(data.get("productId") or data.get("product_id"))
-        if not product_id:
-            return JsonResponse({"error": "productId required"}, status=400)
-
-        try:
-            quantity = int(data.get("quantity", 1))
-        except (ValueError, TypeError):
-            return JsonResponse({"error": "Quantity must be integer"}, status=400)
-
-        if quantity < 1:
-            return JsonResponse({"error": "Quantity must be positive"}, status=400)
-
+        data = json.loads(request.body.decode("utf-8"))
+        product_id = data["product_id"]
+        quantity = data["quantity"]
         cart = request.session.get("cart", {})
-        cart[product_id] = cart.get(product_id, 0) + quantity
-        request.session["cart"] = cart
-        request.session.modified = True
-        return JsonResponse({"success": True, "cart": cart})
+
+        if cart is None:
+            cart = {}
+
+        if str(product_id) not in cart:
+            cart[str(product_id)] = quantity
+        else:
+            cart[str(product_id)] += quantity
+
+        request.session.update({"cart": cart})
+
+        return JsonResponse({"success": True})
 
     def delete(self, request, product_id: int):
         cart = request.session.get("cart", {})

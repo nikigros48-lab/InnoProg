@@ -35,14 +35,14 @@
                 if (isNaN(value)) value = 0;
                 if (value < {{ product.stock }}) value++;
                 counter.innerHTML = value.toString();
-            };
+            }
 
             decrease.onclick = function (event) {
                 let value = parseInt(counter.innerHTML);
                 if (isNaN(value)) value = 0;
                 if (value > 0) value--;
                 counter.innerHTML = value.toString();
-            };
+            }
 
             function setButtonState(inCart) {
                 if (inCart) {
@@ -61,7 +61,7 @@
                 })
                 .catch(err => console.error('Ошибка проверки корзины:', err));
 
-            toCartBtn.addEventListener('click', function (event) {
+            toCartBtn.onclick = function (event) {
                 event.preventDefault();
                 const action = toCartBtn.dataset.action;
 
@@ -78,7 +78,7 @@
                             'X-CSRFToken': csrftoken
                         },
                         body: JSON.stringify({
-                            productId: productId,
+                            product_id: productId,
                             quantity: quantity
                         })
                     })
@@ -91,7 +91,8 @@
                     .catch(err => console.error('Ошибка добавления:', err));
 
                 } else if (action === 'remove') {
-                    fetch(`{% url "cart-delete" productId %}`, {
+                    const deleteUrl = "{% url 'cart-delete' product_id=0 %}".replace('0', productId);
+                    fetch(deleteUrl, {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
@@ -103,12 +104,12 @@
                             setButtonState(false);
                             counter.innerHTML = "0";
                         } else {
-                            return response.json().then(err => console.error('Ошибка удаления:', err));
+                            return response.json().then(err => console.error('Ошибка:', err));
                         }
                     })
                     .catch(err => console.error('Ошибка удаления:', err));
                 }
-            });
+            }
         });
     </script>
     <div class="product-container">
