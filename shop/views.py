@@ -48,6 +48,8 @@ class CartView(View):
             return JsonResponse({"in_cart": in_cart})
 
         cart = request.session.get("cart", {})
+        if cart is None:
+            return JsonResponse({"error": "Корзина не найдена"}, status=404)
         return JsonResponse({"cart": cart})
 
     def post(self, request):
