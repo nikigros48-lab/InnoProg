@@ -54,7 +54,7 @@
         }
     }
 
-    fetch(`/cart/?product_id=${productId}`)
+    fetch(`{% url "cart" %}?product_id=${productId}`)
         .then(response => response.json())
         .then(data => {
             setButtonState(data.in_cart);

@@ -41,11 +41,14 @@ class ProductDetailView(DetailView):
 class CartView(View):
     def get(self, request):
         product_id = request.GET.get("product_id")
-        if not product_id:
-            return JsonResponse({"error": "product_id required"}, status=400)
+
+        if product_id:
+            cart = request.session.get("cart", {})
+            in_cart = str(product_id) in cart
+            return JsonResponse({"in_cart": in_cart})
+
         cart = request.session.get("cart", {})
-        in_cart = str(product_id) in cart
-        return JsonResponse({"in_cart": in_cart})
+        return JsonResponse({"cart": cart})
 
     def post(self, request):
         try:
