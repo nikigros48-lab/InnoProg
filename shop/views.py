@@ -1,4 +1,5 @@
 from django.contrib.auth import login, authenticate, logout
+from django.db.models import F, Value, QuerySet
 from django.shortcuts import render, redirect
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib.auth.forms import UserCreationForm
@@ -28,14 +29,22 @@ class AllProductsView(IsAuthenticatedMixin, ListView):
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
-class ProductDetailView(DetailView):
+class ProductDetailView(IsAuthenticatedMixin, DetailView):
     model = Product
     template_name = "product_detail.html"
     context_object_name = "product"
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs: QuerySet[Product] = super().get_queryset()
+        if getattr(self.request, "discount", False):
+            discount = 100
+            qs = qs.annotate(discount_price=F("price") - Value(discount))
         return qs.prefetch_related("productimage_set")
+
+    def get_context_data(self, **kwargs):
+        cd = super().get_context_data(**kwargs)
+        cd["discount"] = getattr(self.request, "discount", False)
+        return cd
 
 
 class CartView(View):
@@ -81,6 +90,36 @@ class CartView(View):
 
         request.session.update({"cart": cart})
         return JsonResponse({}, status=204)
+
+
+class ShowCartView(View):
+    @staticmethod
+    def get(request: HttpRequest) -> HttpResponse:
+        cart = request.session.get("cart", {})
+        if not cart:
+            return JsonResponse({"detail": "Cart does not exist"}, status=400)
+
+        product_ids = list(map(int, cart.keys()))
+        qs = Product.objects.filter(id__in=product_ids)
+        discount = 100
+
+        has_discount = getattr(request, "discount", False)
+        if has_discount:
+            qs = qs.annotate(effective_price=F("price") - Value(discount))
+        else:
+            qs = qs.annotate(effective_price=F("price"))
+
+        product_quantity_cart = {}
+        for product in qs:
+            quantity = cart.get(str(product.id), 0)
+            total_price = quantity * product.effective_price
+            product_quantity_cart[product] = (quantity, total_price)
+
+        return render(
+            request,
+            "cart.html",
+            context={"cart": product_quantity_cart, "discount": has_discount},
+        )
 
 
 class RegistrationView(View):
